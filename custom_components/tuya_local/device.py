@@ -29,6 +29,7 @@ from .const import (
 )
 from .helpers.config import get_device_id
 from .helpers.device_config import possible_matches
+from .helpers.ir_codebook import attach_ir_packet, load_codebook
 from .helpers.log import log_json
 
 _LOGGER = logging.getLogger(__name__)
@@ -147,6 +148,7 @@ class TuyaLocalDevice(object):
         self._reset_cached_state()
 
         self._hass = hass
+        self._ir_codebook_lock = asyncio.Lock()
 
         # API calls to update Tuya devices are asynchronous and non-blocking.
         # This means you can send a change and immediately request an updated
@@ -600,6 +602,17 @@ class TuyaLocalDevice(object):
 
     async def async_set_properties(self, properties):
         if len(properties) == 0:
+            return
+
+        if not self.dev_cid:
+            async with self._ir_codebook_lock:
+                path = self._hass.config.path("tuya_local_ir", f"{self.dev_id}.json")
+                book = await self._hass.async_add_executor_job(load_codebook, path)
+                properties = attach_ir_packet(
+                    self._get_cached_state(), properties, book
+                )
+                self._add_properties_to_pending_updates(properties)
+                await self._debounce_sending_updates()
             return
 
         self._add_properties_to_pending_updates(properties)

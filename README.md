@@ -317,3 +317,9 @@ Beyond contributing device configs, here are some areas that could benefit from 
 2. Once unit tests are complete, the next task is to properly evaluate against the Home Assistant quality scale.
 3. Discovery. Local discovery is currently limited to finding the IP address in the cloud assisted config. Performing discovery in background would allow notifications to be raised when new devices are noticed on the network, and would provide a productKey for the manual config method to use when matching device configs.
 
+
+### Optional full-state IR codebooks
+
+For controllers that acknowledge climate writes without emitting IR, see
+[optional local IR codebooks](docs/ir-codebooks.md). This advanced opt-in path
+uses locally supplied complete packets and does not download cloud libraries.
